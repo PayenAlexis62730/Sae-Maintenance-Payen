@@ -1,25 +1,32 @@
 <?php
-require 'config.php';
+include('config.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = htmlspecialchars($_POST["username"]);
-    $email = htmlspecialchars($_POST["email"]);
-    $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = $_POST['username'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $username, $email, $password);
-
-    if ($stmt->execute()) {
-        echo "Inscription réussie ! <a href='connexion.php'>Connectez-vous</a>";
+    // Vérification si l'utilisateur existe déjà
+    $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $username, $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        echo "L'utilisateur ou l'email existe déjà.";
     } else {
-        echo "Erreur : " . $stmt->error;
+        // Hachage du mot de passe
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+        // Insertion dans la base de données
+        $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("sss", $username, $email, $hashed_password);
+        if ($stmt->execute()) {
+            echo "Inscription réussie !";
+        } else {
+            echo "Erreur : " . $stmt->error;
+        }
     }
 }
 ?>
-
-<form method="post">
-    <input type="text" name="username" placeholder="Nom d'utilisateur" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Mot de passe" required>
-    <button type="submit">S'inscrire</button>
-</form>

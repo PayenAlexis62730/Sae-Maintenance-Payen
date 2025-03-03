@@ -1,31 +1,29 @@
 <?php
 session_start();
-require 'config.php';
+include('config.php');
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = htmlspecialchars($_POST["email"]);
-    $password = $_POST["password"];
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
+    // Vérification des identifiants
+    $sql = "SELECT * FROM users WHERE username = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $username);
     $stmt->execute();
-    $stmt->store_result();
-    $stmt->bind_result($id, $username, $hashed_password);
-    $stmt->fetch();
-
-    if ($stmt->num_rows > 0 && password_verify($password, $hashed_password)) {
-        $_SESSION["user_id"] = $id;
-        $_SESSION["username"] = $username;
-        header("Location: profil.php");
-        exit();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        if (password_verify($password, $user['password'])) {
+            // Connexion réussie
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            header("Location: profile.php"); // Redirection vers le profil
+        } else {
+            echo "Mot de passe incorrect.";
+        }
     } else {
-        echo "Email ou mot de passe incorrect.";
+        echo "Utilisateur non trouvé.";
     }
 }
 ?>
-
-<form method="post">
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Mot de passe" required>
-    <button type="submit">Se connecter</button>
-</form>

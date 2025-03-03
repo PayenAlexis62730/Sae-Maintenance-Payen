@@ -1,24 +1,36 @@
 <?php
 session_start();
-require 'config.php';
+include('config.php');
 
-if (!isset($_SESSION["user_id"])) {
-    header("Location: connexion.php");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php"); // Redirection vers la page de connexion
     exit();
 }
 
-$user_id = $_SESSION["user_id"];
-$username = $_SESSION["username"];
+$user_id = $_SESSION['user_id'];
 
-// Récupération des statistiques
-$stmt = $conn->prepare("SELECT COUNT(*) AS total_exercises, SUM(score) AS total_score FROM exercises WHERE user_id = ?");
+// Récupérer les statistiques des exercices
+$sql = "SELECT exercise_name, score, date FROM exercises WHERE user_id = ? ORDER BY date DESC";
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
-$stmt->bind_result($total_exercises, $total_score);
-$stmt->fetch();
+$result = $stmt->get_result();
 ?>
 
-<h1>Bienvenue, <?php echo $username; ?> !</h1>
-<p>Nombre d'exercices réalisés : <?php echo $total_exercises; ?></p>
-<p>Score total : <?php echo $total_score; ?></p>
-<a href="deconnexion.php">Se déconnecter</a>
+<h1>Profil de <?php echo $_SESSION['username']; ?></h1>
+
+<h2>Statistiques des exercices</h2>
+<table>
+    <tr>
+        <th>Exercice</th>
+        <th>Score</th>
+        <th>Date</th>
+    </tr>
+    <?php while ($row = $result->fetch_assoc()) { ?>
+    <tr>
+        <td><?php echo $row['exercise_name']; ?></td>
+        <td><?php echo $row['score']; ?></td>
+        <td><?php echo $row['date']; ?></td>
+    </tr>
+    <?php } ?>
+</table>
