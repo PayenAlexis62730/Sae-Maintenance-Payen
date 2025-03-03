@@ -57,8 +57,12 @@
 							//session_destroy();
 							//session_unset();
 							?>
-							<form action="./index.php" method="post">
+							<form action="./index.php" method="post" style="display: inline-block; margin-right: 10px;">
 								<input type="submit" value="Recommencer" autofocus>
+							</form>
+
+							<form action="../index.php" method="get" style="display: inline-block;">
+								<input type="submit" value="Retour à l'accueil">
 							</form>
     
     

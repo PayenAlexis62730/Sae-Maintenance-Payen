@@ -15,6 +15,8 @@ $sql = "SELECT * FROM exercices WHERE user_id = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$user_id]);
 $exercices = $stmt->fetchAll();
+
+//echo $user_id;
 ?>
 
 <!doctype html>
