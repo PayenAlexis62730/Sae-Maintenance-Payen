@@ -18,25 +18,29 @@ Cette partie du projet ajoute un système de connexion avec profils d'utilisateu
 ### Configuration
 1. **Créer la base de données** dans MySQL :
 ```sql
-CREATE DATABASE sae_maintenance;
-USE sae_maintenance;
+CREATE DATABASE exercice_app;
 
+USE exercice_app;
+
+-- Table des utilisateurs
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    email VARCHAR(100) NOT NULL UNIQUE,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_registered TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE exercises (
+-- Table des exercices réalisés
+CREATE TABLE exercices (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    exercise_name VARCHAR(100) NOT NULL,
-    score INT DEFAULT 0,
-    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    user_id INT,
+    exercice_name VARCHAR(100),
+    score INT,
+    date_completed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
 ```
 
 2. **Modifier `config.php`** avec vos informations de connexion MySQL :
@@ -46,23 +50,6 @@ $username = "root";
 $password = "";
 $dbname = "sae_maintenance";
 ```
-
-3. **Redirection automatique vers la connexion** :
-   - Nous avons modifié `index.php` pour que les utilisateurs soient redirigés vers `login.php` s'ils ne sont pas connectés.
-   - Cela évite d'accéder directement à l'accueil sans authentification.
-   
-4. **Lancer le projet** en ouvrant un serveur local (ex: MAMP, WAMP) et accéder aux fichiers via le navigateur.
-
-## Utilisation
-1. **S'inscrire** via le fichier `register.php`.
-2. **Se connecter** via le fichier `login.php`.
-3. **Accéder à son profil** via le fichier `profile.php`.
-4. **Se déconnecter** via le fichier `logout.php`.
-
-## Modifications rajouter au code existant 
-- Afon de renforcer la sécurité du site j'ai inclus la connexion obligatoire avant d'accéder au site pour cela j'ai changé index.html en index.php pour inclure la page de connexion avant. 
-- Renommage des fichiers pour plus de cohérence (`register.php` -> `enregister.php`, `login.php` -> `connexion.php`, `profile.php` -> `profil.php`, `logout.php` -> `deconnexion.php`).
-
 
 **Auteur :** Alexis Payen  
 **Licence :** Libre

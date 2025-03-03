@@ -1,0 +1,119 @@
+/* Global Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+/* Main Profile Page */
+.profile-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+}
+
+/* Header Section */
+.profile-header {
+    background-color: #45a1ff;
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.profile-header h1 {
+    font-size: 36px;
+    margin: 0;
+}
+
+.profile-header p {
+    font-size: 18px;
+    margin: 10px 0 0;
+}
+
+/* Profile Content */
+.profile-content {
+    width: 80%;
+    max-width: 1200px;
+}
+
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    padding: 20px;
+}
+
+.card h2 {
+    font-size: 28px;
+    color: #ff7700;
+}
+
+.card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.card th, .card td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.card th {
+    background-color: #ff7700;
+    color: white;
+}
+
+.card td {
+    background-color: #f9f9f9;
+}
+
+/* Button */
+.button-home {
+    background-color: #ff7700;
+    color: white;
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    display: inline-block;
+}
+
+.button-home:hover {
+    background-color: #ff4500;
+}
+
+/* Footer */
+.footer {
+    background-color: #45a1ff;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    width: 100%;
+    margin-top: 30px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-content {
+        width: 100%;
+    }
+
+    .card h2 {
+        font-size: 24px;
+    }
+
+    .button-home {
+        width: 100%;
+        padding: 15px;
+    }
+}
