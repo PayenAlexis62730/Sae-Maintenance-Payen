@@ -38,4 +38,3 @@ La refonte graphique n'est pas demandée. Si vous voulez modifier le design, vou
 
 Voir Cours Moodle SAES6 maintenance
 
-# petit test coucou
