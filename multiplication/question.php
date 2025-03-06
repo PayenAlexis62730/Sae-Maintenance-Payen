@@ -1,39 +1,22 @@
 <?php
-@ob_start(); // Démarre la mise en mémoire tampon de la sortie (utile pour éviter les erreurs d'en-têtes HTTP déjà envoyés)
+    @ob_start();
+    include 'utils.php';
 
-// Inclusion du fichier 'utils.php' contenant des fonctions utilitaires (comme 'log_adresse_ip')
-include 'utils.php';
 
-// Démarre ou récupère la session existante
-session_start();
+    session_start();
+    $_SESSION['origine']="question";
+    if($_SESSION['prenom']=="" && $_POST['prenom']==""){
+        log_adresse_ip("logs/log.txt","question.php - accès irrégulier");
+        unset($_SESSION);
+        unset($_POST);
+        header('Location: ./index.php');
+    }
+    if($_SESSION['prenom']==""){
+        $_SESSION['prenom']=$_POST['prenom'];
+    }
+    $numQuestion=$_SESSION['nbQuestion']+1;
 
-// Définir l'origine de la page (utilisé plus tard pour rediriger)
-$_SESSION['origine'] = "question";
-
-// Vérification des variables de session et POST pour s'assurer que le prénom de l'utilisateur est bien défini
-if ($_SESSION['prenom'] == "" && $_POST['prenom'] == "") {
-    // Si le prénom n'est pas défini dans la session et n'est pas passé en POST, enregistrez un accès irrégulier dans le log
-    log_adresse_ip("logs/log.txt", "question.php - accès irrégulier");
-    
-    // Efface les données de session et de POST
-    unset($_SESSION);
-    unset($_POST);
-
-    // Redirection vers la page d'accueil si l'accès est irrégulier
-    header('Location: ./index.php');
-    exit();
-}
-
-// Si le prénom est vide dans la session mais est passé en POST, on le définit dans la session
-if ($_SESSION['prenom'] == "") {
-    $_SESSION['prenom'] = $_POST['prenom'];
-}
-
-// Incrémenter le nombre de questions
-$numQuestion = $_SESSION['nbQuestion'] + 1;
-
-// Log l'accès à la page de question avec le prénom et le numéro de la question
-log_adresse_ip("logs/log.txt", "question.php - ".$_SESSION['prenom']." - Question numéro ".$numQuestion);
+    log_adresse_ip("logs/logs.json", "question.php", ["question_numero" => $numQuestion]);
 
 ?>
 

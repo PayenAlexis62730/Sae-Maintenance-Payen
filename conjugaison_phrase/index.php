@@ -1,15 +1,36 @@
 <?php
-	@ob_start();
-    include 'utils.php';
-    log_adresse_ip("logs/log.txt","index.php");
+@ob_start(); // Démarre la mise en mémoire tampon de la sortie (utile pour les redirections)
+include 'utils.php'; // Inclut un fichier qui contient des fonctions utilitaires (par exemple, pour loguer des informations)
+log_adresse_ip("logs/log.txt", "index.php"); // Appelle une fonction pour enregistrer l'adresse IP dans un fichier log
 
-	session_start();
-	$_SESSION['nbMaxQuestions']=10;
-	$_SESSION['nbQuestion']=0;
-	$_SESSION['nbBonneReponse']=0;
-	$_SESSION['prenom']="";
-	$_SESSION['historique']="";
-	$_SESSION['origine']="index";
+session_start(); // Démarre la session pour pouvoir utiliser les variables de session
+// Initialisation des variables de session
+$_SESSION['nbMaxQuestions'] = 10; // Nombre maximal de questions à poser
+$_SESSION['nbQuestion'] = 0; // Initialisation du nombre de questions répondues
+$_SESSION['nbBonneReponse'] = 0; // Initialisation du nombre de bonnes réponses
+$_SESSION['prenom'] = ""; // Initialisation du prénom de l'utilisateur
+$_SESSION['historique'] = ""; // Initialisation de l'historique des questions/réponses
+$_SESSION['origine'] = "index"; // Définition de la page d'origine
+
+include '../Connexion/config.php'; // Inclut un fichier pour la connexion à la base de données
+
+// Vérification si l'utilisateur est connecté, sinon rediriger vers la page de login
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php"); // Si l'utilisateur n'est pas connecté, on le redirige vers la page de login
+    exit(); // On s'assure que le script s'arrête ici
+}
+
+// On récupère l'ID de l'utilisateur depuis la session
+$user_id = $_SESSION['user_id']; // Utilisation de l'index correct pour obtenir l'ID de l'utilisateur
+
+// Préparation et exécution de la requête SQL pour récupérer le nom d'utilisateur
+$sql = "SELECT username FROM users WHERE id = ?"; // Requête pour obtenir le username de l'utilisateur
+$stmt = $pdo->prepare($sql); // Préparation de la requête
+$stmt->execute([$user_id]); // Exécution de la requête avec le paramètre de l'ID de l'utilisateur
+$user = $stmt->fetch(); // Récupération du résultat de la requête
+
+// Vérification si un utilisateur a été trouvé et assignation de son prénom
+$prenom = $user ? htmlspecialchars($user['username']) : ''; // Si un utilisateur est trouvé, on nettoie le username, sinon on laisse une chaîne vide
 ?>
 
 <!doctype html>
@@ -40,7 +61,7 @@
 							<h2>Tu vas devoir complèter <?php echo ''.$_SESSION['nbMaxQuestions'].'' ?> phrases avec un verbe conjugué.</h2><br />
 							<h3>Mais avant, Quel est ton prénom ?</h3>
 							<form action="./question.php" method="post">
-								<input type="text" id="prenom" name="prenom" autocomplete="off" autofocus><br /><br /><br />
+							<input type="text" id="prenom" name="prenom" autocomplete="off" autofocus value="<?php echo $prenom; ?>" readonly> <!-- Champ de texte avec prénom déjà rempli et en lecture seule -->
 								<input type="submit" value="Commencer">
 							</form>
 						

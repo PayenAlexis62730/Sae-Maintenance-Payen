@@ -1,20 +1,23 @@
 <?php
-	@ob_start();
-	session_start();
+    @ob_start();
     include 'utils.php';
 
-	$_SESSION['origine']="question";
+
+    session_start();
+    $_SESSION['origine']="question";
     if($_SESSION['prenom']=="" && $_POST['prenom']==""){
         log_adresse_ip("logs/log.txt","question.php - accès irrégulier");
         unset($_SESSION);
         unset($_POST);
         header('Location: ./index.php');
-    }	
-	if($_SESSION['prenom']==""){
-		$_SESSION['prenom']=$_POST['prenom'];
-	}
+    }
+    if($_SESSION['prenom']==""){
+        $_SESSION['prenom']=$_POST['prenom'];
+    }
     $numQuestion=$_SESSION['nbQuestion']+1;
-    log_adresse_ip("logs/log.txt","question.php - ".$_SESSION['prenom']." - Question numéro ".$numQuestion);
+
+    log_adresse_ip("logs/logs.json", "question.php", ["question_numero" => $numQuestion]);
+
 ?>
 
 <!doctype html>

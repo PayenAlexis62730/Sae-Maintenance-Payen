@@ -1,11 +1,13 @@
 <?php
-	@ob_start();
-	session_start();
-    include 'utils.php';
-    
-    log_adresse_ip("logs/log.txt","fin.php - ".$_SESSION['prenom']);
+@ob_start();
+include 'utils.php';
+session_start();
 
-	$_SESSION['origine']="fin";
+log_adresse_ip("logs/logs.json", "fin.php", [
+    'score_global' => $_SESSION['nbBonneReponse']
+]);
+
+$_SESSION['origine'] = "fin";
 ?>
 
 <!doctype html>

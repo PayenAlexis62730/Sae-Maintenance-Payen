@@ -1,9 +1,14 @@
 <?php
 	@ob_start();
-	session_start();
     include 'utils.php';
-	
-    log_adresse_ip("logs/log.txt","correction.php - ".$_SESSION['prenom']." - Question numéro ".$_SESSION['nbQuestion']);
+	session_start();
+
+    log_adresse_ip("logs/log.txt", "correction.php", [
+        $_SESSION['prenom'], 
+        "Question numéro ".$_SESSION['nbQuestion']
+    ]);
+
+    log_adresse_ip("logs/logs.json", "correction.php");
 
 
 	if($_POST['correction']==""){

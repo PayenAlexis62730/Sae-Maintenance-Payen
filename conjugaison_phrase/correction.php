@@ -1,16 +1,22 @@
 <?php
 	@ob_start();
     include 'utils.php';
-    session_start();
-    log_adresse_ip("logs/log.txt","correction.php - ".$_SESSION['prenom']." - Question numéro ".$_SESSION['nbQuestion']);
+	session_start();
 
-	
-    if($_POST['correction']==""){
-        session_destroy();
-        session_unset();
-        unset($_POST);
-        header('Location: ./index.php');
-    }
+    log_adresse_ip("logs/log.txt", "correction.php", [
+        $_SESSION['prenom'], 
+        "Question numéro ".$_SESSION['nbQuestion']
+    ]);
+
+    log_adresse_ip("logs/logs.json", "correction.php");
+
+
+	if($_POST['correction']==""){
+		session_destroy();
+		session_unset();
+		unset($_POST);
+		header('Location: ./index.php');
+	}
 ?>
 
 <!doctype html>
