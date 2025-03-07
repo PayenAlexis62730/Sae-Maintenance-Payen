@@ -43,6 +43,27 @@ if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
     $stmt->execute([$user_id]);
     $teacher_exercices = $stmt->fetchAll();
 }
+
+// Ajouter un nouvel élève à l'enseignant
+if ($user['role'] == 'enseignant' && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_student'])) {
+    $student_username = trim($_POST['student_username']);
+    
+    // Vérifier si l'élève existe et s'il n'a pas déjà un enseignant
+    $sql = "SELECT id FROM users WHERE username = ? AND role = 'enfant' AND teacher_id IS NULL";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$student_username]);
+    $student = $stmt->fetch();
+    
+    if ($student) {
+        // Ajouter l'élève à l'enseignant
+        $sql = "UPDATE users SET teacher_id = ? WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$user_id, $student['id']]);
+        $message = "L'élève a été ajouté avec succès.";
+    } else {
+        $message = "Cet élève n'existe pas ou a déjà un enseignant.";
+    }
+}
 ?>
 
 <!doctype html>
@@ -82,6 +103,19 @@ if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
                     <a href="exercice_config.php">
                         <button class="button-home">Créer un Exercice</button>
                     </a>
+                </div>
+
+                <!-- Section Ajouter un nouvel élève -->
+                <div class="card">
+                    <h2>Ajouter un Nouvel Élève</h2>
+                    <form method="POST">
+                        <label for="student_username">Nom d'utilisateur de l'élève :</label>
+                        <input type="text" name="student_username" id="student_username" required>
+                        <button type="submit" name="add_student" class="button-home">Ajouter l'Élève</button>
+                    </form>
+                    <?php if (isset($message)): ?>
+                        <p><?php echo htmlspecialchars($message); ?></p>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -164,7 +198,7 @@ if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
 
                 <!-- Section étudiants pour les enseignants -->
                 <div class="card">
-                    <h2>Vos Étudiants</h2>
+                    <h2>Vos Élèves</h2>
                     <ul>
                         <?php
                         // Récupérer les enfants associés à l'enseignant

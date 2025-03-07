@@ -1767,5 +1767,14 @@
         "method": "POST",
         "user": "toto tutu",
         "module": "addition"
+    },
+    {
+        "timestamp": "2025-03-07 15:02:46",
+        "ip": "::1",
+        "page": "index.php",
+        "method": "GET",
+        "user": "Inconnu",
+        "module": "addition",
+        "event": "DÉBUT SESSION"
     }
 ]
