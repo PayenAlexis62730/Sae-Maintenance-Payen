@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password_confirm = $_POST['password_confirm'];
     $child_name = ($role == 'parent') ? $_POST['child_name'] : null; // Enfants pour le parent
     $teacher_students = ($role == 'enseignant') ? $_POST['teacher_students'] : null; // Elèves pour l'enseignant
+    $class_level = ($role == 'enfant') ? $_POST['class'] : null; // Classe de l'élève, uniquement pour le rôle "enfant"
 
     // Si le rôle est parent ou enseignant, on vérifie si l'email existe déjà
     if ($role != 'enfant') {
@@ -66,10 +67,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Si aucune erreur, on procède à l'insertion dans la base
     if (!isset($error)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (username, email, password, role, child_name, teacher_students)
-                VALUES (?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO users (username, email, password, role, child_name, teacher_students, class_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?)";
         $stmt = $pdo->prepare($sql);
-        if ($stmt->execute([$username, $email, $hashed_password, $role, $child_name, $teacher_students])) {
+        if ($stmt->execute([$username, $email, $hashed_password, $role, $child_name, $teacher_students, $class_level])) {
             $user_id = $pdo->lastInsertId();
 
             // Si l'utilisateur est un parent, associer l'ID du parent aux enfants
@@ -104,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -153,6 +155,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <input type="text" name="teacher_students" placeholder="Ex: Enfant1, Enfant2, Enfant3"><br><br>
                         </div>
 
+                        <!-- Pour le rôle enfant : entrer la classe -->
+                        <div id="enfant_fields" style="display:none;">
+                            <label>Classe :</label><br>
+                            <select name="class" required>
+                                <option value="CP">CP</option>
+                                <option value="CE1">CE1</option>
+                                <option value="CE2">CE2</option>
+                                <option value="CM1">CM1</option>
+                                <option value="CM2">CM2</option>
+                            </select><br><br>
+                        </div>
+
                         <button type="submit">S'inscrire</button>
                     </form>
                     <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
@@ -162,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </tr>
         </table>
     </center>
+
     <script>
         // Script pour afficher/masquer les champs selon le rôle sélectionné
         document.getElementById('role_select').addEventListener('change', function() {
@@ -169,7 +184,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('email_field').style.display = (role !== 'enfant') ? 'block' : 'none';
             document.getElementById('parent_fields').style.display = (role === 'parent') ? 'block' : 'none';
             document.getElementById('enseignant_fields').style.display = (role === 'enseignant') ? 'block' : 'none';
+            document.getElementById('enfant_fields').style.display = (role === 'enfant') ? 'block' : 'none';
         });
+
         // Déclencher le changement dès le chargement pour afficher le bon champ
         document.getElementById('role_select').dispatchEvent(new Event('change'));
     </script>

@@ -12,6 +12,7 @@ $username = $_SESSION['username'];
 
 // Vérifier si un parent ou enseignant consulte le profil d'un enfant
 $viewed_user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $user_id;
+$redirect_user_id = isset($_GET['redirect_id']) ? $_GET['redirect_id'] : null;  // ID de retour (parent ou enseignant)
 
 // Récupérer les informations de l'utilisateur actuel
 $sql = "SELECT role FROM users WHERE id = ?";
@@ -26,11 +27,22 @@ $stmt->execute([$viewed_user_id]);
 $viewed_user = $stmt->fetch();
 
 // Récupérer les exercices de l'utilisateur affiché
-$sql = "SELECT * FROM exercices WHERE user_id = ?";
+$sql = "SELECT * FROM exercices WHERE student_id = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$viewed_user_id]);
 $exercices = $stmt->fetchAll();
 
+// Récupérer les exercices créés par l'enseignant pour les étudiants
+if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
+    // Jointure entre exercices et users pour récupérer les exercices créés par l'enseignant pour ses étudiants
+    $sql = "SELECT e.* 
+            FROM exercices e
+            JOIN users u ON u.id = e.student_id
+            WHERE u.teacher_id = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_id]);
+    $teacher_exercices = $stmt->fetchAll();
+}
 ?>
 
 <!doctype html>
@@ -56,10 +68,45 @@ $exercices = $stmt->fetchAll();
                 <h2>Informations</h2>
                 <p><strong>Nom d'utilisateur :</strong> <?php echo htmlspecialchars($viewed_user['username']); ?></p>
                 <p><strong>Rôle :</strong> <?php echo htmlspecialchars($viewed_user['role']); ?></p>
+                
+                <?php if ($viewed_user['role'] == 'enfant'): ?>
+                    <p><strong>Classe :</strong> <?php echo htmlspecialchars($viewed_user['class_level']); ?></p> <!-- Affichage de la classe -->
+                <?php endif; ?>
             </div>
 
+            <?php if ($user['role'] == 'enseignant' && $viewed_user_id == $user_id): ?>
+                <!-- Section Créer un Exercice -->
+                <div class="card">
+                    <h2>Créer un Exercice</h2>
+                    <p>Vous pouvez créer un exercice pour vos étudiants.</p>
+                    <a href="exercice_config.php">
+                        <button class="button-home">Créer un Exercice</button>
+                    </a>
+                </div>
+            <?php endif; ?>
+
             <?php if ($viewed_user['role'] == 'enfant'): ?>
-                <!-- Section exercices pour les enfants -->
+                <!-- Section Voir les Exercices pour les enfants -->
+                <?php if ($user['role'] == 'enfant'): ?>
+                    <div class="card">
+                        <h2>Voir les Exercices</h2>
+                        <p>Les exercices créés par votre enseignant :</p>
+                        <?php if (!empty($teacher_exercices)): ?>
+                            <ul>
+                                <?php foreach ($teacher_exercices as $exercice): ?>
+                                    <li>
+                                        <?php echo htmlspecialchars($exercice['exercice_name']); ?> 
+                                        - <?php echo $exercice['date_created']; ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php else: ?>
+                            <p>Aucun exercice disponible pour vous.</p>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <!-- Section exercices réalisés -->
                 <div class="card">
                     <h2>Exercices Réalisés</h2>
                     <table>
@@ -105,7 +152,7 @@ $exercices = $stmt->fetchAll();
 
                         foreach ($children as $child): ?>
                             <li>
-                                <a href="profile.php?user_id=<?php echo $child['id']; ?>">
+                                <a href="profile.php?user_id=<?php echo $child['id']; ?>&redirect_id=<?php echo $user_id; ?>">
                                     <?php echo htmlspecialchars($child['username']); ?>
                                 </a>
                             </li>
@@ -129,16 +176,24 @@ $exercices = $stmt->fetchAll();
                         foreach ($students as $student):
                             // On récupère l'id de l'enfant à partir de son username
                             $student_id = $student['id'];
-                            //echo $student_id; 
                         ?>
                             <li>
-                                <!-- Lien vers le profil de l'enfant, en passant son id -->
-                                <a href="profile.php?user_id=<?php echo $student_id; ?>">
+                                <!-- Lien vers le profil de l'enfant, en passant son id et le redirect_id -->
+                                <a href="profile.php?user_id=<?php echo $student_id; ?>&redirect_id=<?php echo $user_id; ?>">
                                     <?php echo htmlspecialchars($student['username']); ?>
                                 </a>
                             </li>
                         <?php endforeach; ?>
                     </ul>
+                </div>
+            <?php endif; ?>
+
+            <!-- Bouton "Retour au profil" -->
+            <?php if ($redirect_user_id): ?>
+                <div class="back-to-profile">
+                    <a href="profile.php?user_id=<?php echo $redirect_user_id; ?>">
+                        <button class="button-back">Retour à mon Profil</button>
+                    </a>
                 </div>
             <?php endif; ?>
         </section>

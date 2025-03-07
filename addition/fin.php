@@ -1,6 +1,7 @@
 <?php
 @ob_start();
 include 'utils.php';
+include '../Connexion/config.php'; // Connexion à la base de données
 session_start();
 
 log_adresse_ip("logs/logs.json", "fin.php", [
@@ -8,8 +9,19 @@ log_adresse_ip("logs/logs.json", "fin.php", [
 ]);
 
 $_SESSION['origine'] = "fin";
-?>
 
+// Enregistrement des résultats dans la base de données
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $score = $_SESSION['nbBonneReponse'];
+    $total_questions = $_SESSION['nbQuestion'];
+    $date_completed = date('Y-m-d H:i:s');
+    
+	$sql = "INSERT INTO exercices (student_id, exercice_name, score, total_questions, date_completed) VALUES (?, 'Addition', ?, ?, ?)";
+	$stmt = $pdo->prepare($sql);
+	$stmt->execute([$user_id, $score, $total_questions, $date_completed]);	
+}
+?>
 
 <!doctype html>
 <html lang="fr">

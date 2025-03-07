@@ -1,31 +1,16 @@
 <?php
-// Inclusion du fichier de configuration pour la connexion à la base de données
-include 'config.php';
+include 'config.php'; // Connexion à la base de données
 
-// Démarrage de la session pour récupérer les informations de l'utilisateur connecté
-session_start();
+// Vérifie si les variables de session nécessaires sont définies
+if (isset($_SESSION['user_id'], $_SESSION['nbBonneReponse'], $_SESSION['exercice_name'])) {
+    $student_id = $_SESSION['user_id']; // Récupère l'ID de l'étudiant
+    $score = $_SESSION['nbBonneReponse']; // Récupère le score obtenu
+    $exercice_name = $_SESSION['exercice_name']; // Récupère le nom de l'exercice
+    $date_completed = date('Y-m-d H:i:s'); // Enregistre la date et l'heure actuelles
 
-// Vérifier si l'utilisateur est connecté en vérifiant l'existence de la variable 'user_id' dans la session
-if (!isset($_SESSION['user_id'])) {
-    // Si l'utilisateur n'est pas connecté, rediriger vers la page de connexion
-    header("Location: login.php");
-    exit();
+    // Insère les résultats de l'exercice dans la base de données
+    $sql = "INSERT INTO exercices (student_id, exercice_name, score, date_completed) VALUES (?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$student_id, $exercice_name, $score, $date_completed]); // Exécute la requête avec les valeurs
 }
-
-// Récupérer l'ID de l'utilisateur à partir de la session
-$user_id = $_SESSION['user_id'];
-
-// Récupérer les données envoyées par le formulaire (le nom de l'exercice et le score)
-$exercice_name = $_POST['exercice_name'];
-$score = $_POST['score'];
-
-// Préparer la requête SQL pour insérer les données dans la table 'exercices'
-$sql = "INSERT INTO exercices (user_id, exercice_name, score) VALUES (?, ?, ?)";
-$stmt = $pdo->prepare($sql);
-
-// Exécuter la requête SQL en liant les valeurs des variables
-$stmt->execute([$user_id, $exercice_name, $score]);
-
-// Afficher un message indiquant que l'exercice a bien été enregistré
-echo "Exercice enregistré!";
 ?>

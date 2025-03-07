@@ -1,0 +1,11 @@
+[
+    {
+        "timestamp": "2025-03-07 13:42:52",
+        "ip": "::1",
+        "page": "index.php",
+        "method": "GET",
+        "user": "Inconnu",
+        "module": "dictee",
+        "event": "DÉBUT SESSION"
+    }
+]
