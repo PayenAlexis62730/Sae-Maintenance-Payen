@@ -2,19 +2,21 @@
 session_start();
 include 'config.php';
 
+// Vérifier si l'utilisateur est connecté, sinon rediriger vers la page de connexion
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
+// Récupérer l'ID et le nom d'utilisateur de l'utilisateur connecté
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
-// Vérifier si un parent ou enseignant consulte le profil d'un enfant
+// Vérifier si un parent ou enseignant consulte le profil d'un enfant (si 'user_id' est dans l'URL)
 $viewed_user_id = isset($_GET['user_id']) ? $_GET['user_id'] : $user_id;
 $redirect_user_id = isset($_GET['redirect_id']) ? $_GET['redirect_id'] : null;  // ID de retour (parent ou enseignant)
 
-// Récupérer les informations de l'utilisateur actuel
+// Récupérer les informations de l'utilisateur actuel (rôle)
 $sql = "SELECT role FROM users WHERE id = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$user_id]);
@@ -26,15 +28,14 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute([$viewed_user_id]);
 $viewed_user = $stmt->fetch();
 
-// Récupérer les exercices de l'utilisateur affiché
+// Récupérer les exercices de l'utilisateur affiché (exercices réalisés par l'enfant)
 $sql = "SELECT * FROM exercices WHERE student_id = ?";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$viewed_user_id]);
 $exercices = $stmt->fetchAll();
 
-// Récupérer les exercices créés par l'enseignant pour les étudiants
+// Si l'utilisateur est un enseignant et qu'il consulte le profil d'un enfant, récupérer les exercices créés par l'enseignant pour ses étudiants
 if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
-    // Jointure entre exercices et users pour récupérer les exercices créés par l'enseignant pour ses étudiants
     $sql = "SELECT e.* 
             FROM exercices e
             JOIN users u ON u.id = e.student_id
@@ -48,14 +49,14 @@ if ($user['role'] == 'enseignant' && $viewed_user['role'] == 'enfant') {
 if ($user['role'] == 'enseignant' && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_student'])) {
     $student_username = trim($_POST['student_username']);
     
-    // Vérifier si l'élève existe et s'il n'a pas déjà un enseignant
+    // Vérifier si l'élève existe et n'a pas encore de professeur
     $sql = "SELECT id FROM users WHERE username = ? AND role = 'enfant' AND teacher_id IS NULL";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$student_username]);
     $student = $stmt->fetch();
     
+    // Si l'élève existe, l'ajouter à l'enseignant
     if ($student) {
-        // Ajouter l'élève à l'enseignant
         $sql = "UPDATE users SET teacher_id = ? WHERE id = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$user_id, $student['id']]);
@@ -179,6 +180,7 @@ if ($user['role'] == 'enseignant' && $_SERVER['REQUEST_METHOD'] == 'POST' && iss
                     <h2>Vos Enfants</h2>
                     <ul>
                         <?php
+                        // Récupérer les enfants associés au parent
                         $sql = "SELECT id, username FROM users WHERE role = 'enfant' AND parent_id = ?";
                         $stmt = $pdo->prepare($sql);
                         $stmt->execute([$user_id]);
@@ -195,7 +197,6 @@ if ($user['role'] == 'enseignant' && $_SERVER['REQUEST_METHOD'] == 'POST' && iss
                 </div>
 
             <?php elseif ($user['role'] == 'enseignant'): ?>
-
                 <!-- Section étudiants pour les enseignants -->
                 <div class="card">
                     <h2>Vos Élèves</h2>
@@ -208,11 +209,9 @@ if ($user['role'] == 'enseignant' && $_SERVER['REQUEST_METHOD'] == 'POST' && iss
                         $students = $stmt->fetchAll();
 
                         foreach ($students as $student):
-                            // On récupère l'id de l'enfant à partir de son username
                             $student_id = $student['id'];
                         ?>
                             <li>
-                                <!-- Lien vers le profil de l'enfant, en passant son id et le redirect_id -->
                                 <a href="profile.php?user_id=<?php echo $student_id; ?>&redirect_id=<?php echo $user_id; ?>">
                                     <?php echo htmlspecialchars($student['username']); ?>
                                 </a>
